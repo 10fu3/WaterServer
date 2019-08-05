@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -jar build/libs/WaterServer-1.0.jar
+web: java $JAVA_OPTS -jar ./target/WaterServer-1.0.jar
