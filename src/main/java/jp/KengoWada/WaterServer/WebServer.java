@@ -54,7 +54,7 @@ public class WebServer {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 //リクエストを一度Jsonに変換
-                JsonNode node = mapper.readTree(res.body());
+                JsonNode node = mapper.readTree(req.body());
                 if(node.has("url")){
                     String url = node.get("url").asText();
                     final CuttingTask[] queue = new CuttingTask[]{CuttingTask.Init(null,
