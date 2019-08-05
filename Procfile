@@ -1,0 +1,1 @@
+web: java $JAVA_OPTS -jar build/libs/WaterServer-name-1.0.jar
