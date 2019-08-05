@@ -1,6 +1,6 @@
 package jp.KengoWada.WaterServer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
@@ -52,15 +52,14 @@ public class WebServer {
         //ダウンロード/分割リクエストを受け付ける
         spark.Spark.post("/request",(req,res)->{
             ObjectMapper mapper = new ObjectMapper();
-            Map<String,String> map;
             try {
                 //リクエストを一度Jsonに変換
-                map = mapper.readValue(req.body(),new TypeReference<LinkedHashMap<String,String>>(){});
-
-                if(map.containsKey("url")){
+                JsonNode node = mapper.readTree(res.body());
+                if(node.has("url")){
+                    String url = node.get("url").asText();
                     final CuttingTask[] queue = new CuttingTask[]{CuttingTask.Init(null,
                             UUID.randomUUID().toString(),
-                            String.valueOf(map.get("url")))};
+                            url)};
                     this.queue.add(queue[0]);
 
 

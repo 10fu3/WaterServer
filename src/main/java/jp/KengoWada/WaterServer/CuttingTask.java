@@ -1,6 +1,6 @@
 package jp.KengoWada.WaterServer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
@@ -21,6 +21,7 @@ public class CuttingTask {
 
     public static CuttingTask Init(Runnable onFinished, String ID, String TargetUrl){
         CuttingTask queue = new CuttingTask();
+        System.out.println("分割するファイルのURLとして次のURLが指定されました "+TargetUrl);
         return queue
                 .setOnDownloaded(onFinished)
                 .setID(ID)
@@ -33,7 +34,7 @@ public class CuttingTask {
             return null;
         }
         ObjectMapper mapper = new ObjectMapper();
-        Map<String,String> map;
+
         try {
             //リクエストを一度Jsonに変換
             System.out.println(response);
@@ -42,14 +43,14 @@ public class CuttingTask {
                 this.uploadFile(uploaded,num);
             }
             //JSONをMapに変換
-            map = mapper.readValue(response,new TypeReference<LinkedHashMap<String,String>>(){});
+            JsonNode node = mapper.readTree(response);
             //アップロード頻度によって現れるアップロードしすぎメッセージ
-            if(map.containsKey("error")){
+            if(node.has("error")){
                 //もう一度アップロードを申請しなおす
                 this.uploadFile(uploaded,num);
             }else{
                 //ダウンロードに必要なURLをレスポンスJSONから回収
-                partOfUrl.add(map.get("link"));
+                partOfUrl.add(node.get("link").asText());
                 //もし分割回数とダウンロードURLのリストサイズが一致したとき、ダウンロードが終了したものとみなす
                 if(this.partNumber == partOfUrl.size()){
                     this.setFinished(true);
