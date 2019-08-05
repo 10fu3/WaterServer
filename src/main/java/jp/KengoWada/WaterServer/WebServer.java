@@ -49,7 +49,7 @@ public class WebServer {
                 .map(CuttingTask::getID)
                 .collect(Collectors.toList())));
 
-        //ダウンロード/分割リクエストを受け付ける
+        //ダウンロード/分割リクエストを受け付ける(POST)
         spark.Spark.post("/request",(req,res)->{
             ObjectMapper mapper = new ObjectMapper();
             try {
@@ -57,15 +57,15 @@ public class WebServer {
                 JsonNode node = mapper.readTree(req.body());
                 if(node.has("url")){
                     String url = node.get("url").asText();
-                    final CuttingTask[] queue = new CuttingTask[]{CuttingTask.Init(null,
+                    final CuttingTask queue = CuttingTask.Init(null,
                             UUID.randomUUID().toString(),
-                            url)};
-                    this.queue.add(queue[0]);
+                            url);
+                    this.queue.add(queue);
 
 
-                    queue[0].startDownload();
+                    queue.startDownload();
                     System.out.println("ダウンロード開始");
-                    return queue[0].getID();
+                    return queue.getID();
                 }
 
             } catch (Exception ignore) {
@@ -74,7 +74,11 @@ public class WebServer {
             return "";
         });
 
+        spark.Spark.get("/reset",(req,res)->{
+            safetyLock = true;
 
+            return "";
+        });
 
         //サーバーを停止する 仮でつけたもの
         spark.Spark.get("/stop",(req,res)->{

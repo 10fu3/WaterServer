@@ -73,11 +73,6 @@ public class HTTPMultiPart {
                     }
                     System.out.println("残っているタスク "+String.valueOf(WaitingUpload.size()));
                     Thread thread = new Thread(()->{
-                        //強制終了時
-                        if(WebServer.safetyLock){
-                            timer.cancel();
-                            return;
-                        }
                         try {
                             q.q.onUploaded(sendData(q.data, q.num),q.data,q.num);
                         } catch (IOException e) {
@@ -96,18 +91,23 @@ public class HTTPMultiPart {
 
     private static String sendData(byte[] bytes,Integer num) throws IOException {
 
+        //FileIO(API)に対して
         HttpPost request = new HttpPost("https://file.io/");
         HttpClient client = HttpClientBuilder.create().build();
+        //マルチパート形式のデータを送る
         HttpEntity entity = MultipartEntityBuilder.create()
                 .addBinaryBody("file",bytes,ContentType.DEFAULT_BINARY,"file-"+String.valueOf(num))
                 .build();
         request.setEntity(entity);
+        //ここで送信
         HttpResponse response = client.execute(request);
 
 
         BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+        //読み取ったJSONを格納する 念の為StringではなくStringBuilderで実装
         StringBuilder sb = new StringBuilder();
         String line;
+        //レスポンスを読み取る
         while ((line = br.readLine()) != null) {
             sb.append(line);
         }
