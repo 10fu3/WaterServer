@@ -39,8 +39,8 @@ public class WebServer {
             if(Optionalresult.isPresent()){
                 CuttingTask result = Optionalresult.get();
                 List<String> re = new LinkedList<>();
-                for(Tapple<String,String> v : result.getPartOfUrlAndName()){
-                    re.add(v.Left+","+v.Right);
+                for(Plate<String,String,String> v : result.getPartOfUrlAndName()){
+                    re.add(v.First+","+v.Second+","+v.Third);
                 }
 
                 return String.join("<br>",re);

@@ -8,9 +8,10 @@ import java.net.*;
 import java.util.*;
 import java.util.function.Supplier;
 
-class Tapple<L,R>{
-    R Right = null;
-    L Left = null;
+class Plate<F,S,T>{
+    F First = null;
+    S Second = null;
+    T Third = null;
 }
 
 //サーバー内でリクエストを受けたURLの状況を管理するためのクラス
@@ -18,7 +19,7 @@ public class CuttingTask {
     private Integer partNumber = 0; //Fileサイズを把握するための変数
     private Runnable onFinished = null;//ダウンロードが終わったときに処理されるクロージャ 未使用
     private String ID = UUID.randomUUID().toString();//サーバー内での識別コード
-    private List<Tapple<String,String>> partOfUrlAndName = new ArrayList<>();//ファイルを分割したときのダウンロードURL
+    private List<Plate<String,String,String>> partOfUrlAndName = new ArrayList<>();//ファイルを分割したときのダウンロードURL
     private Boolean Finished = false;//ダウンロードが完了しているか
     private String TargetUrl = "";//ダウンロード先のUR
     private String FileName = "";//ファイル名-パートナンバー.拡張子 (ex: abc-1.jpg)
@@ -55,9 +56,10 @@ public class CuttingTask {
                 this.uploadFile(uploaded,num);
             }else{
                 //ダウンロードに必要なURLをレスポンスJSONから回収
-                Tapple<String,String> value = new Tapple<>();
-                value.Left = node.get("link").asText();
-                value.Right = FileName+"-"+String.valueOf(partNumber)+"."+FileExtension;
+                Plate<String,String,String> value = new Plate<>();
+                value.First = String.valueOf(num);
+                value.Second = node.get("link").asText();
+                value.Third = FileName;
                 partOfUrlAndName.add(value);
                 //もし分割回数とダウンロードURLのリストサイズが一致したとき、ダウンロードが終了したものとみなす
                 if(this.partNumber == partOfUrlAndName.size()){
@@ -153,7 +155,7 @@ public class CuttingTask {
         return this;
     }
 
-    public List<Tapple<String,String>> getPartOfUrlAndName() {
+    public List<Plate<String,String,String>> getPartOfUrlAndName() {
         return partOfUrlAndName;
     }
 
@@ -187,8 +189,13 @@ public class CuttingTask {
         //URLからファイル名を抽出するクロージャ
         Supplier<String> getFileNameLamda = ()->{
             String[] array = getTargetUrl().split("/");
+            String name = "";
             if(array[array.length-1].length() == 0 && array.length > 1){
-                return array[array.length-2];
+                name = array[array.length-2];
+                if(name.contains(".")){
+                    name = name.split(".")[0];
+                }
+                return name;
             }
             return array[array.length-1];
         };
