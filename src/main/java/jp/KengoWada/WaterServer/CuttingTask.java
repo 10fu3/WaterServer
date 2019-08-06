@@ -8,16 +8,21 @@ import java.net.*;
 import java.util.*;
 import java.util.function.Supplier;
 
+class Tapple<L,R>{
+    R Right = null;
+    L Left = null;
+}
+
 //サーバー内でリクエストを受けたURLの状況を管理するためのクラス
 public class CuttingTask {
     private Integer partNumber = 0; //Fileサイズを把握するための変数
     private Runnable onFinished = null;//ダウンロードが終わったときに処理されるクロージャ 未使用
     private String ID = UUID.randomUUID().toString();//サーバー内での識別コード
-    private List<String> partOfUrl = new ArrayList<>();//ファイルを分割したときのダウンロードURL
+    private List<Tapple<String,String>> partOfUrlAndName = new ArrayList<>();//ファイルを分割したときのダウンロードURL
     private Boolean Finished = false;//ダウンロードが完了しているか
-    private String TargetUrl = "";//ダウンロード先のURL
-
-    //private String FileName = "";
+    private String TargetUrl = "";//ダウンロード先のUR
+    private String FileName = "";//ファイル名-パートナンバー.拡張子 (ex: abc-1.jpg)
+    private String FileExtension = "";//拡張子
 
     public static CuttingTask Init(Runnable onFinished, String ID, String TargetUrl){
         CuttingTask queue = new CuttingTask();
@@ -50,9 +55,12 @@ public class CuttingTask {
                 this.uploadFile(uploaded,num);
             }else{
                 //ダウンロードに必要なURLをレスポンスJSONから回収
-                partOfUrl.add(node.get("link").asText());
+                Tapple<String,String> value = new Tapple<>();
+                value.Left = node.get("link").asText();
+                value.Right = FileName+"-"+String.valueOf(partNumber)+"."+FileExtension;
+                partOfUrlAndName.add(value);
                 //もし分割回数とダウンロードURLのリストサイズが一致したとき、ダウンロードが終了したものとみなす
-                if(this.partNumber == partOfUrl.size()){
+                if(this.partNumber == partOfUrlAndName.size()){
                     this.setFinished(true);
                 }
 
@@ -145,14 +153,14 @@ public class CuttingTask {
         return this;
     }
 
-    public List<String> getPartOfUrl() {
-        return partOfUrl;
+    public List<Tapple<String,String>> getPartOfUrlAndName() {
+        return partOfUrlAndName;
     }
 
-    public CuttingTask setPartOfUrl(List<String> partOfUrl) {
-        this.partOfUrl = partOfUrl;
-        return this;
-    }
+//    public CuttingTask setPartOfUrl(List<Tapple<String,String>> partOfUrl) {
+//        this.partOfUrlAndName = partOfUrl;
+//        return this;
+//    }
 
     public Boolean isFinished() {
         return Finished;
@@ -171,11 +179,12 @@ public class CuttingTask {
         return TargetUrl;
     }
 
+    //URL設定時にダウンロードファイルの拡張子とファイル名を設定 拡張子検出コードは次ページを参考にした http://pentan.info/java/sample/get_extension.html
     public CuttingTask setTargetUrl(String targetUrl) {
         TargetUrl = targetUrl;
 
 
-        //URLからファイル名を抽出するクロージャ　未使用
+        //URLからファイル名を抽出するクロージャ
         Supplier<String> getFileNameLamda = ()->{
             String[] array = getTargetUrl().split("/");
             if(array[array.length-1].length() == 0 && array.length > 1){
@@ -183,8 +192,24 @@ public class CuttingTask {
             }
             return array[array.length-1];
         };
+         this.FileName = getFileNameLamda.get();
+        Supplier<String> getExtension = ()->{
+            //以下 http://pentan.info/java/sample/get_extension.html 参考対象
+            if (this.FileName == null) {
+                return null;
+            }
 
-         //this.FileName = getFileNameLamda.get();
+            // 最後の『 . 』の位置を取得します。
+            int lastDotPosition = this.FileName.lastIndexOf(".");
+
+            // 『 . 』が存在する場合は、『 . 』以降を返します。
+            if (lastDotPosition != -1) {
+                return this.FileName.substring(lastDotPosition + 1);
+            }
+            return null;
+        };
+        this.FileExtension = getExtension.get();
+
 
         return this;
     }

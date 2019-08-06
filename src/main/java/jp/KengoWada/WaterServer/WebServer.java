@@ -38,7 +38,12 @@ public class WebServer {
             Optional<CuttingTask> Optionalresult = queue.stream().filter(q -> q.getID().equalsIgnoreCase(id)).findAny();
             if(Optionalresult.isPresent()){
                 CuttingTask result = Optionalresult.get();
-                return String.join("<br>",result.getPartOfUrl());
+                List<String> re = new LinkedList<>();
+                for(Tapple<String,String> v : result.getPartOfUrlAndName()){
+                    re.add(v.Left+","+v.Right);
+                }
+
+                return String.join("<br>",re);
             }else{
                 return "";
             }
