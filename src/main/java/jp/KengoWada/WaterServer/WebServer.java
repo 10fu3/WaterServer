@@ -28,19 +28,25 @@ public class WebServer {
 
         //ダウンロード/分割処理の終わったリクエストを返す
         spark.Spark.get("/ended",(req,res)-> {
+            //ダウンロード待機リストのうち、ダウンロードが完了していないものを抽出
             return String.join("<br>",queue.stream().filter(CuttingTask::isFinished)
+                    ////このうちIDのみをリストにする
                     .map(CuttingTask::getID)
                     .collect(Collectors.toList()));
         });
 
         spark.Spark.get("/get/:id",(req,res)->{
             String id = req.params(":id");
+            //ダウンロード待機リストからIDに合致するものを検索
             Optional<CuttingTask> Optionalresult = queue.stream().filter(q -> q.getID().equalsIgnoreCase(id)).findAny();
+            //もし存在するとき
             if(Optionalresult.isPresent()){
                 CuttingTask result = Optionalresult.get();
                 List<String> re = new LinkedList<>();
+                //アップロード先URLリストを抽出&加工
                 for(Plate<String,String,String> v : result.getPartOfUrlAndName()){
-                    re.add(v.First+","+v.Second+","+v.Third);
+                    //Index§Link§File Name
+                    re.add(v.First+"§"+v.Second+"§"+v.Third);
                 }
 
                 return String.join("<br>",re);
@@ -50,7 +56,9 @@ public class WebServer {
         });
 
         spark.Spark.get("/list",(req,res)->
+                //ダウンロード待機リストのうち、ダウンロードが完了していないものを抽出
                 String.join("<br>",queue.stream().filter(q-> !q.isFinished())
+                //このうちIDのみをリストにする
                 .map(CuttingTask::getID)
                 .collect(Collectors.toList())));
 
