@@ -57,7 +57,7 @@ public class CuttingTask {
             }else{
                 //ダウンロードに必要なURLをレスポンスJSONから回収
                 Plate<String,String,String> value = new Plate<>();
-                value.First = String.valueOf(num);
+                value.First = String.valueOf(num-1);
                 value.Second = node.get("link").asText();
                 value.Third = FileName;
                 partOfUrlAndName.add(value);
