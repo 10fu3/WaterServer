@@ -15,7 +15,7 @@ public class WebServer {
 
     public static void stop(){
         safetyLock = true;
-        spark.Spark.stop();
+        //spark.Spark.stop();
     }
 
     public void init(){
@@ -89,7 +89,11 @@ public class WebServer {
 
         spark.Spark.get("/reset",(req,res)->{
             safetyLock = true;
+            return "";
+        });
 
+        spark.Spark.get("/start",(req,res)->{
+            Main.restart();
             return "";
         });
 

@@ -57,7 +57,7 @@ public class CuttingTask {
             }else{
                 //ダウンロードに必要なURLをレスポンスJSONから回収
                 Plate<String,String,String> value = new Plate<>();
-                value.First = String.valueOf(num-1);
+                value.First = String.valueOf(num);
                 value.Second = node.get("link").asText();
                 value.Third = FileName;
                 partOfUrlAndName.add(value);
@@ -109,9 +109,7 @@ public class CuttingTask {
                     while((c =fileIS.read()) != -1){
                         bais.write((byte) c);
                         //1MBでカット
-                        if(bais.size() == 1048576){
-                            //分割回数をカウントする
-                            count += 1;
+                        if(bais.size() == 10485760){
                             System.out.println("Download start8");
                             bais.close();
                             //アップロード処理の開始
@@ -119,15 +117,17 @@ public class CuttingTask {
                                 return;
                             }
                             this.uploadFile(bais.toByteArray(),count);
+                            //分割回数をカウントする
+                            count += 1;
                             //バイト配列を初期化
                             bais = new ByteArrayOutputStream();
                             System.out.println("Download start9");
                         }
                     }
-                    //もし残りのバイト配列が１MB未満の場合、アップロードされるようにする
-                    if(1048576 > bais.size()){
-                        count += 1;
+                    //もし残りのバイト配列が10MB未満の場合、アップロードされるようにする
+                    if(10485760 > bais.size()){
                         this.uploadFile(bais.toByteArray(),count);
+                        count += 1;
                     }
 
                     bais.close();
